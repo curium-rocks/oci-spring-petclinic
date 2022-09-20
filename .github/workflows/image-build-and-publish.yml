@@ -13,4 +13,4 @@ jobs:
   build:
     uses: curium-rocks/flows/.github/workflows/oci-build-image.yml@main
     with:
-      image: oci-spring-petclinic
+      image_name: oci-spring-petclinic
