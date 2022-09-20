@@ -1,19 +1,18 @@
-# Create base that can be used to build the jar
-FROM alpine:latest AS jdk_base
+# Create base with zulu apk repo added
+FROM alpine:latest as zulu_base
 RUN apk add --no-cache wget && \
   wget -P /etc/apk/keys/ https://cdn.azul.com/public_keys/alpine-signing@azul.com-5d5dc44c.rsa.pub && \
   echo "https://repos.azul.com/zulu/alpine" | tee -a /etc/apk/repositories && \
   apk update --no-cache && \
-  apk add --no-cache zulu17-jdk
+  apk del --no-cache wget
+
+# Create base that can be used to build the jar
+FROM zulu_base AS jdk_base
+RUN apk add --no-cache zulu17-jdk
 
 # Create a base that can be used to run the jar
-FROM alpine:latest AS jre_base
-RUN apk add --no-cache wget && \
-  wget -P /etc/apk/keys/ https://cdn.azul.com/public_keys/alpine-signing@azul.com-5d5dc44c.rsa.pub && \
-  echo "https://repos.azul.com/zulu/alpine" | tee -a /etc/apk/repositories && \
-  apk update --no-cache && \
-  apk add --no-cache zulu17-jre-headless && \ 
-  apk del --no-cache wget
+FROM zulu_base AS jre_base
+RUN apk add --no-cache zulu17-jre-headless
 
 # Use the JDK base and grab the repo and build the jar
 FROM jdk_base as build_base
@@ -38,6 +37,6 @@ RUN addgroup -g ${GID} docker && \
     --no-create-home \
     --uid "$UID" \
     "$USER"
-COPY --from=BUILD_BASE --chown=docker:docker /build/spring-petclinic/build/libs/*.jar /app/petclinic.jar
+COPY --from=build_base --chown=docker:docker /build/spring-petclinic/build/libs/*.jar /app/petclinic.jar
 CMD [ "java", "-jar", "/app/petclinic.jar" ]
 EXPOSE 8080
