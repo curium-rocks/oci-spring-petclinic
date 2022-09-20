@@ -28,7 +28,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: sigstore/cosign-installer@f3c664df7af409cb4873aa5068053ba9d61a57b6
         with:
-          cosign-release: 'v1.4.0'
+          cosign-release: 'v1.12.0'
       # for multi arch container builds
       - name: Set up QEMU
         uses: docker/setup-qemu-action@master
